@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"	
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
+		http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit-1.3.xsd">
+			
+	<context:property-placeholder  location="classpath:application.properties" />
+	
+	<context:component-scan base-package="com.huxley.plagiarism" />
+ 
+	<task:scheduler id="taskScheduler" pool-size="1" />
+	
+	<task:annotation-driven scheduler="taskScheduler" />
+	
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+		<property name="driverClass" value="${db.driver}" />
+		<property name="jdbcUrl" value="${db.url}" />
+		<property name="user" value="${db.username}" />
+		<property name="password" value="${db.password}" />
+	    <property name="minPoolSize" value="${db.min}" />
+	    <property name="maxPoolSize" value="${db.max}" />
+	    <property name="maxConnectionAge" value="7200" />
+	</bean>
+	
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<constructor-arg ref="dataSource" />
+	</bean>
+	
+	<bean id="jsonMessageConverter" class="org.springframework.amqp.support.converter.JsonMessageConverter" />
+	
+    <rabbit:connection-factory id="connectionFactory" host="${rabbit.url}" port="${rabbit.port}" username="${rabbit.username}" password="${rabbit.password}" />
+    
+    <rabbit:connection-factory id="huxleyConnectionFactory" host="${huxley.rabbit.url}" port="${huxley.rabbit.port}" username="${huxley.rabbit.username}" password="${huxley.rabbit.password}" />
+    
+    <rabbit:admin id="plagiarismAdmin" connection-factory="connectionFactory" />
+    
+    <rabbit:admin id="huxleyAdmin" connection-factory="huxleyConnectionFactory" />
+		
+    <rabbit:queue name="plagiarism.warning.queue" durable="true" declared-by="plagiarismAdmin" />
+    
+    <rabbit:queue name="plagiarism_suspect_queue" durable="true" declared-by="huxleyAdmin" />
+    
+    <rabbit:template id="amqpTemplate" connection-factory="huxleyConnectionFactory" message-converter="jsonMessageConverter" />
+    
+    <rabbit:listener-container id="messageListenerContainer" connection-factory="connectionFactory">
+    	<rabbit:listener ref="plagiarismMessageListener" queues="plagiarism.warning.queue" />
+    </rabbit:listener-container>
+    
+</beans>

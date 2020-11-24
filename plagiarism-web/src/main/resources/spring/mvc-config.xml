@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd">
+
+	<context:property-placeholder  location="classpath:application.properties" />
+
+	<context:component-scan base-package="com.huxley.plagiarism" />
+
+	<task:scheduler id="taskScheduler" pool-size="2"  />
+	
+	<task:executor id="taskExecutor" pool-size="2" />
+	
+	<task:annotation-driven scheduler="taskScheduler" executor="taskExecutor" />
+	
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+
+	<mvc:view-controller path="/" view-name="redirect:/groups" />	
+
+	<mvc:annotation-driven />
+
+	<mvc:interceptors>
+		<bean class="org.springframework.orm.hibernate4.support.OpenSessionInViewInterceptor">
+			<property name="sessionFactory" ref="sessionFactory" />
+		</bean>
+	</mvc:interceptors>
+
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize">
+            <value>512000</value>
+        </property>
+	</bean>
+
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+	<import resource="rabbit-mq-config.xml" />
+	
+	<import resource="hibernate-config.xml" />
+	    
+	<import resource="transaction-config.xml" />    
+
+</beans>

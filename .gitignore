@@ -1,0 +1,4 @@
+/plagiarism-core/target
+/plagiarism-web/target
+/plagiarism-worker/target
+.DS_Store

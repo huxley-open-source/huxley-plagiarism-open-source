@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/WEB-INF/decorators">
+
+	<!-- Sem decorator -->
+	<excludes>
+		<pattern>/resources/css/*</pattern>
+		<pattern>/resources/js/*</pattern>
+		<pattern>/resources/img/*</pattern>
+		<pattern>/api/*</pattern>
+		<pattern>/authentication</pattern>
+	</excludes>
+	
+    <decorator name="principal" page="principal.jsp">
+		<pattern>/*</pattern>
+    </decorator>
+</decorators>

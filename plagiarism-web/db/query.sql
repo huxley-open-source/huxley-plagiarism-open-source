@@ -1,0 +1,3 @@
+insert into plagiarism.comparisons 
+select nextval('plagiarism.seq_comparisons'), s1.id, s2.id, 'WAITING', 'now'::timestamp, null, null from plagiarism.submissions s1, plagiarism.submissions s2
+where s1.group_id = s2.group_id and s1.id <> s2.id and s1.status like 'OK' and s2.status like 'OK' and not exists (select 1 from plagiarism.comparisons where source_submission_id = s1.id and target_submission_id = s2.id);
